@@ -3,28 +3,15 @@ import hashlib
 import hmac
 import time
 import base64
-
+import requests
+from requests.exceptions import HTTPError
 
 try:
     # For Python 3.0 and later
-    from urllib.parse import urlencode, quote
+    from urllib.parse import quote
 except ImportError:
     # Fall back to Python 2's urllib
-    from urllib import urlencode, quote
-
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-
-try:
-    # For Python 3.0 and later
-    from urllib.error import HTTPError
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import HTTPError
+    from urllib import quote
 
 try:
     # Try to use the more efficient alternative
@@ -313,7 +300,7 @@ class Mozscape:
             mozRankPassed = 16
 
     # The base url we request from
-    base = 'http://lsapi.seomoz.com/linkscape/%s?%s'
+    base = 'http://lsapi.seomoz.com/linkscape/%s'
 
     def __init__(self, access_id, secret_key):
         self.access_id = access_id
@@ -332,10 +319,12 @@ class Mozscape:
         params['AccessID'] = self.access_id
         params['Expires'] = expires
         params['Signature'] = self.signature(expires)
-        request = Mozscape.base % (method, urlencode(params))
+        request_url = Mozscape.base % (method)
         try:
-            reader = codecs.getreader('utf-8')
-            return json.load(reader(urlopen(request, data)))
+            if data:
+                return requests.post(request_url, params=params, data=data).json()
+            else:
+                return requests.get(request_url, params=params).json()
         except HTTPError as e:
             # The unauthorized status code can sometimes have meaningful data
             if e.code == 401:

@@ -28,7 +28,7 @@ except ImportError:
 
 setup(
     name='mozscape',
-    version='0.1.1',
+    version='0.1.2',
     description='Mozscape API Bindings for Python',
     author_email='dan@moz.com',
     url='http://github.com/seomoz/SEOmozAPISamples',
